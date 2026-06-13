@@ -44,7 +44,7 @@ const getSingleWord = async (req, res) => {
 
   const queryText = `
     SELECT w.word_id, w.word, c.name AS category_name, 
-    c.decription AS category_description, m.definition, m.example_sentence
+    c.description AS category_description, m.definition, m.example_sentence
     FROM words w
     INNER JOIN meanings m ON w.word_id = m.word_id
     INNER JOIN categories c ON c.category_id = m.category_id
@@ -215,8 +215,7 @@ const updateWord = async (req, res, next) => {
 };
 
 const bulkDeleteWords = async (req, res, next) => {
-  const ids = req.body;
-
+  const ids = req.body.ids;
   const parameterPlaceholders = ids
     .map((_, index) => `$${index + 1}`)
     .join(", ");

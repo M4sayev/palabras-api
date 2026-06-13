@@ -31,25 +31,21 @@ const bulkDeleteSchema = z.object({
 
 const updateWordSchema = createWordSchema.partial();
 
-const handleValidation = (schema) => (req, res, next) => {
-  const result = createWordSchema.safeParse(req.body);
+const registerSchema = z.object({
+  name: z.string().trim().min(2, "Name must be at least 2 characters long"),
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(6, "Password must be at least 6 characters long"),
+});
 
-  if (!result.success) {
-    const errorMessages = result.error.issues
-      .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
-      .join(", ");
-
-    const validationError = new Error(errorMessages);
-    validationError.statusCode = 400;
-    return next(validationError);
-  }
-
-  req.body = result.data;
-  next();
-};
+const loginSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(1, "Password is required"),
+});
 
 module.exports = {
-  create: handleValidation(createWordSchema),
-  update: handleValidation(updateWordSchema),
-  bulkDelete: handleValidation(bulkDeleteSchema),
+  createWordSchema,
+  bulkDeleteSchema,
+  updateWordSchema,
+  registerSchema,
+  loginSchema,
 };

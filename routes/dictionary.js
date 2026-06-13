@@ -8,13 +8,13 @@ const {
   updateWord,
   bulkDeleteWords,
 } = require("../controllers/dictionary.js");
-const validateWordDto = require("../middleware/validateWord.js");
+const validateDto = require("../middleware/validateDTO.js");
 
 const router = express.Router();
 
 /**
  * @openapi
- * /words:
+ * /dictionary/words:
  *   get:
  *     summary: Retrieve words with dynamic filtering
  *     description: Fetches words, meanings, and categories. Supports search strings and category filtering.
@@ -52,7 +52,7 @@ const router = express.Router();
  *             properties:
  *               word:
  *                 type: string
- *                 example: "Bebra"
+ *                 example: "test"
  *               category_id:
  *                 type: integer
  *                 example: 1
@@ -100,12 +100,12 @@ const router = express.Router();
 router
   .route("/words")
   .get(asyncWrapper(getWords))
-  .post(validateWordDto.create, asyncWrapper(createWord))
-  .delete(validateWordDto.bulkDelete, asyncWrapper(bulkDeleteWords));
+  .post(validateDto.create, asyncWrapper(createWord))
+  .delete(validateDto.bulkDelete, asyncWrapper(bulkDeleteWords));
 
 /**
  * @openapi
- * /words/{id}:
+ * /dictionary/words/{id}:
  *   parameters:
  *     - in: path
  *       name: id
@@ -160,6 +160,6 @@ router
   .route("/words/:id")
   .get(asyncWrapper(getSingleWord))
   .delete(asyncWrapper(deleteWord))
-  .patch(validateWordDto.update, asyncWrapper(updateWord));
+  .patch(validateDto.update, asyncWrapper(updateWord));
 
 module.exports = router;
