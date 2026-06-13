@@ -23,6 +23,12 @@ const createWordSchema = z.object({
     .min(3, "Example sentence must be at least 3 characters long"),
 });
 
+const bulkDeleteSchema = z.object({
+  ids: z
+    .array(z.number().int().positive())
+    .min(1, "You must provide at least one ID to delete"),
+});
+
 const updateWordSchema = createWordSchema.partial();
 
 const handleValidation = (schema) => (req, res, next) => {
@@ -45,4 +51,5 @@ const handleValidation = (schema) => (req, res, next) => {
 module.exports = {
   create: handleValidation(createWordSchema),
   update: handleValidation(updateWordSchema),
+  bulkDelete: handleValidation(bulkDeleteSchema),
 };
