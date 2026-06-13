@@ -2,9 +2,13 @@ const express = require("express");
 const cors = require("cors");
 const dictionaryRouter = require("./routes/dictionary.js");
 const errorHandler = require("./middleware/errorMiddleware.js");
+const setupSwagger = require("./config/swagger.js");
+const path = require("path");
 require("dotenv").config();
 
 const app = express();
+
+setupSwagger(app);
 
 const corsOptions = {
   origin: "https://localhost:3174",
