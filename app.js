@@ -1,9 +1,11 @@
 const express = require("express");
 const cors = require("cors");
-const dictionaryRouter = require("./routes/dictionary.js");
+const cookieParser = require("cookie-parser");
 const errorHandler = require("./middleware/errorMiddleware.js");
 const setupSwagger = require("./config/swagger.js");
 const path = require("path");
+const dictionaryRouter = require("./routes/dictionary.js");
+const authenticationRouter = require("./routes/auth.js");
 require("dotenv").config();
 
 const app = express();
@@ -16,9 +18,11 @@ const corsOptions = {
 };
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(cors(corsOptions));
 
 app.use("/api/v1/dictionary", dictionaryRouter);
+app.use("/api/v1/auth", authenticationRouter);
 
 app.use(errorHandler);
 
