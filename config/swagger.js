@@ -2,6 +2,7 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
 
 const swaggerOptions = {
+  withCredentials: true,
   definition: {
     openapi: "3.0.0",
     info: {

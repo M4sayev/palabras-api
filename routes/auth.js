@@ -1,7 +1,7 @@
 const express = require("express");
 const asyncWrapper = require("../middleware/asyncWrapper.js");
 const validateDto = require("../middleware/validateDTO.js");
-const { register, login } = require("../controllers/auth.js");
+const { register, login, refresh } = require("../controllers/auth.js");
 
 const router = express.Router();
 
@@ -98,5 +98,6 @@ const router = express.Router();
 
 router.post("/register", validateDto.registerUser, asyncWrapper(register));
 router.post("/login", validateDto.loginUser, asyncWrapper(login));
+router.post("/refresh", asyncWrapper(refresh));
 
 module.exports = router;

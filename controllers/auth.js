@@ -41,7 +41,7 @@ const register = async (req, res, next) => {
 
   const queryText = `
     INSERT INTO users (name, email, password, role)
-    VALUES ($1, $2, $3, 'user)
+    VALUES ($1, $2, $3, user)
     RETURNING id, name, email, role;
   `;
 
