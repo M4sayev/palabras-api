@@ -16,16 +16,17 @@ exports.setup = function (options, seedLink) {
 
 exports.up = function (db) {
   return db.runSql(`
-    CREATE TABLE refresh_tokens (
-    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    user_id INT REFERENCES users(id) ON DELETE CASCADE,
-    token TEXT NOT NULL UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+    CREATE TABLE IF NOT EXISTS refresh_tokens (
+      id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+      user_id INT REFERENCES users(id) ON DELETE CASCADE,
+      token TEXT NOT NULL UNIQUE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 };
 
 exports.down = function (db) {
-  return db.runSql("DROP TABLE IF EXISTS refresh_token CASCADE;");
+  return db.runSql("DROP TABLE IF EXISTS refresh_tokens CASCADE;");
 };
 
 exports._meta = {

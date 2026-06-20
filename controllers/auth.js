@@ -41,23 +41,25 @@ const register = async (req, res, next) => {
 
   const queryText = `
     INSERT INTO users (name, email, password, role)
-    VALUES ($1, $2, $3, user)
+    VALUES ($1, $2, $3, 'user')
     RETURNING id, name, email, role;
   `;
 
   const result = await pool.query(queryText, [name, email, hashedPassword]);
   const newUser = result.rows[0];
 
-  const token = jwt.sign(
-    { id: newUser.id, role: newUser.role },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN },
-  );
+  const { accessToken, refreshToken } = await generateTokens(newUser);
+
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
 
   return res.status(201).json({
     success: true,
     message: "Account created successfully!",
-    token,
+    accessToken,
     user: newUser,
   });
 };
@@ -143,4 +145,50 @@ const refresh = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, refresh };
+const logout = async (req, res, next) => {
+  const refreshToken = req.cookies?.refreshToken;
+
+  if (refreshToken) {
+    await pool.query("DELETE FROM refresh_tokens WHERE token = $1", [
+      refreshToken,
+    ]);
+  }
+
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
+  });
+};
+
+const deleteAccount = async (req, res, next) => {
+  const userId = req.user.id;
+
+  await pool.query("DELETE FROM refresh_tokens WHERE user_id = $1", [userId]);
+  const result = await pool.query(
+    "DELETE FROM users WHERE id = $1 RETURNING id",
+    [userId],
+  );
+
+  if (result.rows.length === 0) {
+    const error = new Error("User not found");
+    error.statusCode = 404;
+    return next(error);
+  }
+
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Account deleted successfully",
+  });
+};
+
+module.exports = { register, login, refresh, logout, deleteAccount };

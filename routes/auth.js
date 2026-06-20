@@ -1,7 +1,14 @@
 const express = require("express");
 const asyncWrapper = require("../middleware/asyncWrapper.js");
 const validateDto = require("../middleware/validateDTO.js");
-const { register, login, refresh } = require("../controllers/auth.js");
+const requireAuth = require("../middleware/requireAuth.js");
+const {
+  register,
+  login,
+  refresh,
+  logout,
+  deleteAccount,
+} = require("../controllers/auth.js");
 
 const router = express.Router();
 
@@ -72,6 +79,7 @@ const router = express.Router();
  *         description: Validation failed (Zod input constraints violated).
  *       500:
  *         description: Internal Server Error.
+ *
  * /auth/refresh:
  *   post:
  *     summary: Exchange a secure refresh token cookie for a brand new access token
@@ -94,10 +102,60 @@ const router = express.Router();
  *         description: Refresh token is missing, expired, or has been revoked from the database whitelist.
  *       500:
  *         description: Internal Server Error.
+ *
+ * /auth/logout:
+ *   post:
+ *     summary: Log out of the current session
+ *     description: Revokes the refresh token by deleting it from the PostgreSQL whitelist and clears the HTTP-Only refresh token cookie. Safe to call even without an active session.
+ *     responses:
+ *       200:
+ *         description: Logged out successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Logged out successfully"
+ *       500:
+ *         description: Internal Server Error.
+ *
+ * /auth/account:
+ *   delete:
+ *     summary: Permanently delete the authenticated user's account
+ *     description: Requires a valid access token. Revokes all refresh tokens issued to the user across every session/device, deletes the user record, and clears the refresh token cookie. This action is irreversible.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Account deleted successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Account deleted successfully"
+ *       401:
+ *         description: Missing or invalid access token.
+ *       404:
+ *         description: User not found.
+ *       500:
+ *         description: Internal Server Error.
  */
 
 router.post("/register", validateDto.registerUser, asyncWrapper(register));
 router.post("/login", validateDto.loginUser, asyncWrapper(login));
 router.post("/refresh", asyncWrapper(refresh));
+router.post("/logout", asyncWrapper(logout));
+router.delete("/account", requireAuth, asyncWrapper(deleteAccount));
 
 module.exports = router;
