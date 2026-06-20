@@ -7,6 +7,7 @@ const {
   createWord,
   updateWord,
   bulkDeleteWords,
+  getCategories,
 } = require("../controllers/dictionary.js");
 const validateDto = require("../middleware/validateDTO.js");
 
@@ -161,5 +162,44 @@ router
   .get(asyncWrapper(getSingleWord))
   .delete(asyncWrapper(deleteWord))
   .patch(validateDto.update, asyncWrapper(updateWord));
+
+/**
+ * @openapi
+ * /categories:
+ *   get:
+ *     summary: List all word categories
+ *     description: Returns every category in the catalog, ordered by name. Used to populate category filters and the add/edit word form on the frontend.
+ *     responses:
+ *       200:
+ *         description: Categories retrieved successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 count:
+ *                   type: integer
+ *                   example: 2
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       category_id:
+ *                         type: integer
+ *                         example: 1
+ *                       name:
+ *                         type: string
+ *                         example: "verbs"
+ *                       description:
+ *                         type: string
+ *                         example: "Action words or states of being."
+ *       500:
+ *         description: Internal Server Error.
+ */
+router.route("/categories").get(asyncWrapper(getCategories));
 
 module.exports = router;

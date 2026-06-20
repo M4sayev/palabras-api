@@ -1,7 +1,9 @@
 const wordRepository = require("../repositories/wordRepository.js");
+const categoryRepository = require("../repositories/categoryRepository.js");
 
 const getWords = async (req, res) => {
-  const { category, search } = req.query;
+  const category = req.query.category;
+  const search = req.query.search;
 
   const words = await wordRepository.findFilteredWords({ category, search });
 
@@ -100,6 +102,16 @@ const bulkDeleteWords = async (req, res, next) => {
   });
 };
 
+const getCategories = async (req, res, next) => {
+  const categories = await categoryRepository.findAll();
+
+  return res.status(200).json({
+    success: true,
+    count: categories.length,
+    data: categories,
+  });
+};
+
 module.exports = {
   getWords,
   getSingleWord,
@@ -107,4 +119,5 @@ module.exports = {
   createWord,
   updateWord,
   bulkDeleteWords,
+  getCategories,
 };
