@@ -8,6 +8,9 @@ const dictionaryRouter = require("./routes/dictionary.js");
 const authenticationRouter = require("./routes/auth.js");
 const { createClient } = require("redis");
 const requireAuth = require("./middleware/requireAuth.js");
+const morgan = require("morgan");
+const logger = require("./config/logger.js");
+const { stripAnsi } = require("./utils/utils.js");
 require("dotenv").config();
 
 const app = express();
@@ -19,9 +22,15 @@ const client = createClient({
 setupSwagger(app);
 
 const corsOptions = {
-  origin: "http://127.0.0.1:5500", // Live Server's actual origin — check the exact port/host it uses
+  origin: "http://127.0.0.1:5500",
   credentials: true,
 };
+
+app.use(
+  morgan("dev", {
+    stream: { write: (message) => logger.info(stripAnsi(message.trim())) },
+  }),
+);
 
 app.use(express.static(path.join(__dirname, "public")));
 
