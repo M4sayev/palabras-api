@@ -15,10 +15,6 @@ require("dotenv").config();
 
 const app = express();
 
-const client = createClient({
-  url: process.env.REDIS_URL,
-});
-
 setupSwagger(app);
 
 const corsOptions = {
@@ -46,5 +42,5 @@ app.use(errorHandler);
 const PORT = process.env.PORT ?? 5000;
 
 app.listen(PORT, () => {
-  `Server is listening on port ${PORT}`;
+  console.log(`Server is listening on port on http://localhost:${PORT}`);
 });
