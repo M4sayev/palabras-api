@@ -1,6 +1,7 @@
 const pool = require("../db/connect.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const createNotFoundHandler = require("../errors/notFoundError.js");
 
 const generateTokens = async (user) => {
   const accessToken = jwt.sign(
@@ -75,9 +76,11 @@ const login = async (req, res, next) => {
   ]);
 
   if (result.rows.length === 0) {
-    const error = new Error("A user with this email does not exist");
-    error.statusCode = 404;
-    return next(error);
+    return createNotFoundHandler("A user with this email does not exist")(
+      req,
+      res,
+      next,
+    );
   }
 
   const user = result.rows[0];
@@ -186,9 +189,7 @@ const deleteAccount = async (req, res, next) => {
   );
 
   if (result.rows.length === 0) {
-    const error = new Error("User not found");
-    error.statusCode = 404;
-    return next(error);
+    return createNotFoundHandler("User not found")(req, res, next);
   }
 
   res.clearCookie("refreshToken", {

@@ -1,5 +1,6 @@
 const wordRepository = require("../repositories/wordRepository.js");
 const categoryRepository = require("../repositories/categoryRepository.js");
+const createNotFoundHandler = require("../errors/notFoundError.js");
 
 const getWords = async (req, res) => {
   const category = req.query.category;
@@ -20,9 +21,7 @@ const getSingleWord = async (req, res, next) => {
   const word = await wordRepository.getWordById(id);
 
   if (!word) {
-    const error = new Error("Word not found");
-    error.statusCode = 404;
-    return next(error);
+    return createNotFoundHandler("Word not found")(req, res, next);
   }
 
   return res.status(200).json({
@@ -37,9 +36,7 @@ const deleteWord = async (req, res, next) => {
   const word = await wordRepository.deleteById(id);
 
   if (!word) {
-    const error = new Error("Word not found");
-    error.statusCode = 404;
-    return next(error);
+    return createNotFoundHandler("Word not found")(req, res, next);
   }
 
   return res.status(200).json({
@@ -72,9 +69,7 @@ const updateWord = async (req, res, next) => {
   const result = await wordRepository.updateWordAndMeaning({ id, ...req.body });
 
   if (!result) {
-    const error = new Error("Word not found");
-    error.statusCode = 404;
-    return next(error);
+    return createNotFoundHandler("Word not found")(req, res, next);
   }
 
   return res.status(200).json({
@@ -89,9 +84,9 @@ const bulkDeleteWords = async (req, res, next) => {
   const { count, words } = await wordRepository.bulkDeleteByIds(ids);
 
   if (count === 0) {
-    const error = new Error("No words were found matching the provided IDs.");
-    error.statusCode = 404;
-    return next(error);
+    return createNotFoundHandler(
+      "No words were found matching the provided IDs.",
+    )(req, res, next);
   }
 
   return res.status(200).json({

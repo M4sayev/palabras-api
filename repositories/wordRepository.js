@@ -1,7 +1,25 @@
 const pool = require("../db/connect.js");
+const redisClient = require("../config/redis.js");
+const { invalidateWordCache } = require("../utils/redis.js");
+const logger = require("../config/logger.js");
 
 class WordRepository {
   async findFilteredWords({ category, search }) {
+    const cleanCategory = category?.trim().toLowerCase() || "all";
+    const cleanSearch = search?.trim().toLowerCase() || "none";
+
+    const cachedKey = `category:${cleanCategory}:search:${cleanSearch}`;
+
+    try {
+      const cachedData = await redisClient.get(cachedKey);
+      if (cachedData) {
+        console.log("Words cache hit");
+        return JSON.parse(cachedData);
+      }
+    } catch (error) {
+      logger.error("Redis read error:", error.message);
+    }
+
     let queryText = `
         SELECT 
         w.word_id, w.word, c.name AS category_name,
@@ -31,19 +49,40 @@ class WordRepository {
     queryText += ` ORDER BY w.word ASC;`;
 
     const result = await pool.query(queryText, queryParams);
+
+    try {
+      await redisClient.setEx(cachedKey, 3600, JSON.stringify(result.rows));
+    } catch (error) {
+      logger.error("Redis write error ", error.message);
+    }
+
     return result.rows;
   }
 
   async deleteById(id) {
     const queryText = `
-    DELETE FROM words 
-    WHERE word_id = $1 
-    RETURNING *;
+    WITH deleted_word AS (
+      DELETE FROM words 
+      WHERE word_id = $1 
+      RETURNING *
+    )
+    SELECT 
+      dw.*, 
+      c.name AS category_name
+    FROM deleted_word dw
+    LEFT JOIN meanings m ON dw.word_id = m.word_id
+    LEFT JOIN categories c ON c.category_id = m.category_id;
   `;
 
     const result = await pool.query(queryText, [id]);
 
-    return result.rowCount === 0 ? null : result.rows[0];
+    const hasDeleted = result.rowCount !== 0;
+
+    if (hasDeleted) {
+      invalidateWordCache(result.rows[0].category_name);
+    }
+
+    return hasDeleted ? result.rows[0] : null;
   }
 
   async getWordById(id) {
@@ -62,17 +101,45 @@ class WordRepository {
   }
 
   async bulkDeleteByIds(ids) {
+    if (!ids || ids.length === 0) return { count: 0, words: [] };
+
     const parameterPlaceholders = ids
       .map((_, index) => `$${index + 1}`)
       .join(", ");
 
     const queryText = `
-        DELETE FROM words 
-        WHERE word_id IN (${parameterPlaceholders})
-        RETURNING *;
+        WITH deleted_words AS (
+          DELETE FROM words 
+          WHERE word_id IN (${parameterPlaceholders})
+          RETURNING *
+        )
+        SELECT 
+          dw.*, 
+          c.name AS category_name
+        FROM deleted_words dw
+        LEFT JOIN meanings m ON dw.word_id = m.word_id
+        LEFT JOIN categories c ON c.category_id = m.category_id;
     `;
 
     const result = await pool.query(queryText, ids);
+
+    if (result.rowCount > 0) {
+      const affectedCategories = [
+        ...new Set(
+          result.rows.map(
+            ((row) => row.category_name?.trim().toLowerCase()).filter(Boolean),
+          ),
+        ),
+      ];
+
+      try {
+        await Promise.all(
+          affectedCategories.map((category) => invalidateWordCache(category)),
+        );
+      } catch (cacheError) {
+        logger.error("Bulk cache invalidation failed:", cacheError.message);
+      }
+    }
 
     return {
       count: result.rowCount,
@@ -125,8 +192,8 @@ class WordRepository {
       };
     } catch (error) {
       await client.query("ROLLBACK");
-
-      return next(error);
+      logger.error("Error creating the word", error.message);
+      throw error;
     } finally {
       client.release();
     }
@@ -141,16 +208,30 @@ class WordRepository {
   }) {
     const client = await pool.connect();
 
+    const categoriesToInvalidate = new Set();
+
     try {
       await client.query("BEGIN");
 
-      const check = await client.query(
-        "SELECT * FROM words WHERE word_id = $1",
+      const oldCategoryCheck = await client.query(
+        `
+      SELECT c.name 
+      FROM meanings m
+      INNER JOIN categories c ON c.category_id = m.category_id
+      WHERE m.word_id = $1
+    `,
         [id],
       );
-      if (check.rows.length === 0) {
+
+      if (oldCategoryCheck.rows.length === 0) {
         await client.query("ROLLBACK");
         return null;
+      }
+
+      if (oldCategoryCheck.rows[0]?.name) {
+        categoriesToInvalidate.add(
+          oldCategoryCheck.rows[0].name.trim().toLowerCase(),
+        );
       }
 
       if (word) {
@@ -166,6 +247,16 @@ class WordRepository {
       if (category_id) {
         meaningValues.push(category_id);
         meaningFields.push(`category_id = $${meaningValues.length}`);
+
+        const newCategoryCheck = await client.query(
+          "SELECT name FROM categories WHERE category_id = $1",
+          [category_id],
+        );
+        if (newCategoryCheck.rows[0]?.name) {
+          categoriesToInvalidate.add(
+            newCategoryCheck.rows[0].name.trim().toLowerCase(),
+          );
+        }
       }
 
       if (definition) {
@@ -190,10 +281,28 @@ class WordRepository {
 
       await client.query("COMMIT");
 
+      try {
+        if (categoriesToInvalidate.size > 0) {
+          await Promise.all(
+            Array.from(categoriesToInvalidate).map((cat) =>
+              invalidateWordCache(cat),
+            ),
+          );
+        } else {
+          await invalidateWordCache();
+        }
+      } catch (cacheError) {
+        logger.error(
+          "Post-commit cache invalidation failed (word-update):",
+          cacheError.message,
+        );
+      }
+
       return true;
     } catch (error) {
       await client.query("ROLLBACK");
-      return error;
+      logger.error("Transaction failed, rolling back:", error.message);
+      throw error;
     } finally {
       client.release();
     }
