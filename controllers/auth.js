@@ -6,7 +6,7 @@ const generateTokens = async (user) => {
   const accessToken = jwt.sign(
     { id: user.id, role: user.role },
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN },
+    { expiresIn: process.env.JWT_EXPIRES_IN ?? "15m" },
   );
 
   const refreshToken = jwt.sign(
@@ -14,6 +14,8 @@ const generateTokens = async (user) => {
     process.env.JWT_REFRESH_SECRET,
     { expiresIn: "7d" },
   );
+
+  await pool.query("DELETE FROM refresh_tokens WHERE user_id = $1", [user.id]);
 
   await pool.query(
     "INSERT INTO refresh_tokens (user_id, token) VALUES ($1, $2)",
@@ -54,6 +56,7 @@ const register = async (req, res, next) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     maxAge: 7 * 24 * 60 * 60 * 1000,
+    sameSite: "strict",
   });
 
   return res.status(201).json({
@@ -70,6 +73,13 @@ const login = async (req, res, next) => {
   const result = await pool.query("SELECT * FROM users WHERE email = $1", [
     email,
   ]);
+
+  if (result.rows.length === 0) {
+    const error = new Error("A user with this email does not exist");
+    error.statusCode = 404;
+    return next(error);
+  }
+
   const user = result.rows[0];
 
   if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -84,6 +94,7 @@ const login = async (req, res, next) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     maxAge: 7 * 24 * 60 * 60 * 1000,
+    sameSite: "strict",
   });
 
   return res.status(200).json({
