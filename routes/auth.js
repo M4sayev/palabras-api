@@ -8,6 +8,8 @@ const {
   refresh,
   logout,
   deleteAccount,
+  forgotPassword,
+  resetPassword,
 } = require("../controllers/auth.js");
 
 const router = express.Router();
@@ -150,6 +152,79 @@ const router = express.Router();
  *         description: User not found.
  *       500:
  *         description: Internal Server Error.
+ * /auth/forgot-password:
+ *   post:
+ *     summary: Request a password reset link
+ *     description: Accepts a user's email address and, if the account exists, generates a secure, short-lived cryptographic reset token stored as a SHA-256 hash. Simulates or dispatches an email containing the raw token link. This endpoint is public and deliberately returns a generic success message to prevent user enumeration.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "msayev02@gmail.com"
+ *     responses:
+ *       200:
+ *         description: Request processed successfully. Generic fallback response used for security containment.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "If an account matches that email, a password reset link has been sent."
+ *       400:
+ *         description: Missing email in the request body or invalid validation payload format.
+ *       500:
+ *         description: Internal Server Error.
+ * /auth/reset-password:
+ *   post:
+ *     summary: Set a new password
+ *     description: Accepts user's new password with the token taken from url and sets it to a new one if not expired and successful.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - newPassword
+ *               - token
+ *             properties:
+ *               newPassword:
+ *                 type: string
+ *                 example: "124214"
+ *               token:
+ *                  type: string
+ *                  example: "egi2et203it32iprj3ij-orj2-9j"
+ *     responses:
+ *       200:
+ *         description: Request processed successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Password has been reset successfully! You can now log in."
+ *       400:
+ *         description: Missing token or password, or the reset token is invalid or has expired.
+ *       500:
+ *         description: Internal Server Error.
  */
 
 router.post("/register", validateDto.registerUser, asyncWrapper(register));
@@ -157,5 +232,15 @@ router.post("/login", validateDto.loginUser, asyncWrapper(login));
 router.post("/refresh", asyncWrapper(refresh));
 router.post("/logout", asyncWrapper(logout));
 router.delete("/account", requireAuth, asyncWrapper(deleteAccount));
+router.post(
+  "/forgot-password",
+  validateDto.forgotPassword,
+  asyncWrapper(forgotPassword),
+);
+router.post(
+  "/reset-password",
+  validateDto.resetPassword,
+  asyncWrapper(resetPassword),
+);
 
 module.exports = router;

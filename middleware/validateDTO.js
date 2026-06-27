@@ -4,6 +4,8 @@ const {
   bulkDeleteSchema,
   registerSchema,
   loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } = require("../validation/schemas");
 
 const handleValidation = (schema) => (req, res, next) => {
@@ -29,4 +31,6 @@ module.exports = {
   bulkDelete: handleValidation(bulkDeleteSchema),
   registerUser: handleValidation(registerSchema),
   loginUser: handleValidation(loginSchema),
+  forgotPassword: handleValidation(forgotPasswordSchema),
+  resetPassword: handleValidation(resetPasswordSchema),
 };

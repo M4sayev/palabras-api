@@ -42,10 +42,26 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+const forgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email format"),
+});
+
+const resetPasswordSchema = z.object({
+  token: z
+    .string({ required_error: "Reset token is required" })
+    .length(64, "Token must be exactly 64 hexadecimal characters"),
+
+  newPassword: z
+    .string({ required_error: "New password is required" })
+    .min(6, "Password must be at least 6 characters long"),
+});
+
 module.exports = {
   createWordSchema,
   bulkDeleteSchema,
   updateWordSchema,
   registerSchema,
   loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 };
