@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./globals.css" />
+    <title>Register</title>
+  </head>
+  <body class="min-h-screen flex-center">
+    <div class="auth-card">
+      <h1>Create an account</h1>
+
+      <form id="registerform" class="auth-form" method="POST" novalidate>
+        <p class="auth-form__error" id="formError" role="alert"></p>
+
+        <div class="field">
+          <label for="name">Name</label>
+          <input
+            type="text"
+            name="name"
+            id="name"
+            autocomplete="name"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            name="email"
+            id="email"
+            autocomplete="email"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            name="password"
+            id="password"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+
+        <button type="submit" class="std-btn">Register</button>
+
+        <p class="auth-switch">
+          Already have an account? <a href="login.html">Log in</a>
+        </p>
+      </form>
+    </div>
+
+    <script src="./src/auth/scripts/register.js" type="module"></script>
+  </body>
+</html>

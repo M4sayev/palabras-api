@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./globals.css" />
+    <title>Log in</title>
+  </head>
+  <body class="min-h-screen flex-center">
+    <div class="auth-card">
+      <h1>Welcome back</h1>
+
+      <form id="loginForm" class="auth-form" method="POST" novalidate>
+        <p class="auth-form__error" id="formError" role="alert"></p>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            name="email"
+            id="email"
+            autocomplete="email"
+            required
+          />
+        </div>
+
+        <div class="field">
+          <label for="password" class="auth-form__password"
+            >Password
+            <a href="forgot-password.html">Forgot Password?</a>
+          </label>
+          <input
+            type="password"
+            name="password"
+            id="password"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+
+        <button type="submit" class="std-btn">Log in</button>
+
+        <p class="auth-switch">
+          Don't have an account? <a href="register.html">Register</a>
+        </p>
+      </form>
+    </div>
+
+    <script src="./src/auth/scripts/login.js" type="module"></script>
+  </body>
+</html>
