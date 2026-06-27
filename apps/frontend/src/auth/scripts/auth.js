@@ -13,11 +13,17 @@ async function register(name, email, password) {
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data.message || "Registration failed");
+    const err = new Error(data.error || "Registration failed");
+
+    if (data.validationErrors) {
+      err.validationErrors = data.validationErrors;
+    }
+
+    throw err;
   }
 
   accessToken = data.accessToken;
-  return data.user;
+  return data;
 }
 
 async function login(email, password) {
@@ -131,7 +137,12 @@ async function sendResetLink(email) {
     const data = await res.json();
 
     if (!res.ok) {
-      throw new Error(data.message || "Failed sending a link");
+      const err = new Error(data.error || "Failed sending a link");
+
+      if (data.validationErrors) {
+        err.validationErrors = data.validationErrors;
+      }
+      throw err;
     }
 
     return data;
@@ -151,7 +162,13 @@ async function resetPassword(newPassword, token) {
     const data = await res.json();
 
     if (!res.ok) {
-      throw new Error(data.message || "Failed resetting the password");
+      const err = new Error(data.error || "Failed resetting the password");
+
+      if (data.validationErrors) {
+        err.validationErrors = data.validationErrors;
+      }
+
+      throw err;
     }
 
     return data;

@@ -243,7 +243,7 @@ const forgotPassword = async (req, res, next) => {
 
   await pool.query(updateQuery, [hashedToken, tokenExpiry, user.id]);
 
-  const resetUrl = `http://localhost:3000/reset-password.html?token=${resetToken}`;
+  const resetUrl = `http://localhost:5173/reset-password.html?token=${resetToken}`;
 
   console.log(
     `\n📨 [EMAIL SIMULATOR] Reset Link sent to ${email}:\n${resetUrl}\n`,

@@ -8,6 +8,9 @@
     "build": "vite build",
     "preview": "vite preview"
   },
+  "dependencies": {
+    "@my-app/validation": "*"
+  },
   "devDependencies": {
     "vite": "^8.1.0"
   }

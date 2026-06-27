@@ -1,50 +1,92 @@
+import { resetPasswordRealTimeSchema } from "@my-app/validation";
 import { resetPassword } from "./auth.js";
+import {
+  hideError,
+  initFormValidation,
+  showAndHideError,
+} from "@/utils/validation.js";
 
 const resetPasswordForm = document.getElementById("resetPasswordForm");
+const submitButton = resetPasswordForm.querySelector("button[type='submit']");
 
-const password1 = document.getElementById("password");
-const password2 = document.getElementById("repeat-password");
+const passwordOne = document.getElementById("newPassword");
+const passwordTwo = document.getElementById("repeatPassword");
 
-window.addEventListener("DOMContentLoaded", async () => {
-  const urlParams = new URLSearchParams(window.location.search);
+const passwordOneError = document.getElementById("passwordErrorOne");
+const passwordTwoError = document.getElementById("passwordErrorTwo");
+const genericError = document.getElementById("genericError");
 
-  const token = urlParams.get("token");
+function clearAll() {
+  passwordOne.value = "";
+  passwordTwo.value = "";
+}
 
-  if (!token) {
-    window.location.href = "index.html";
-  }
-  console.log;
+const formFields = [
+  {
+    inputElement: passwordOne,
+    errorElement: passwordOneError,
+    fieldName: "newPassword",
+  },
+  {
+    inputElement: passwordTwo,
+    errorElement: passwordTwoError,
+    fieldName: "repeatPassword",
+  },
+];
 
-  resetPasswordForm.addEventListener("submit", handleForm);
+const urlParams = new URLSearchParams(window.location.search);
+const token = urlParams.get("token");
+
+initFormValidation({
+  formElement: resetPasswordForm,
+  fields: formFields,
+  fullSchema: resetPasswordRealTimeSchema,
+  submitButton,
 });
 
 async function handleForm(e) {
   e.preventDefault();
+
+  hideError({ element: passwordOneError });
+  hideError({ element: passwordTwoError });
+
+  submitButton.disabled = true;
+
+  const p1 = passwordOne.value;
+  const p2 = passwordTwo.value;
+
+  if (p1 !== p2) {
+    showAndHideError({
+      element: genericError,
+      text: "Passwords do not match.",
+      time: 3000,
+      isVisibility: false,
+    });
+    return;
+  }
+
   try {
-    const p1 = password1.value;
-    const p2 = password2.value;
-
-    if (p1 !== p2) {
-      alert("Password must match");
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-
-    const token = urlParams.get("token");
-
     const result = await resetPassword(p1, token);
 
     if (result) {
       console.log("Success payload received:", result);
       alert("Success! Check your Ethereal inbox for the secure reset link.");
+      clearAll();
 
       window.location.href = "index.html";
     }
   } catch (error) {
-    console.error(
-      "Form submission intercepted an execution error:",
-      error.message,
-    );
-    alert(error.message || "An unexpected error occurred. Please try again.");
+    const text = error.validationErrors
+      ? error.validationErrors.newPassword
+      : error.message;
+
+    showAndHideError({
+      element: genericError,
+      text: text,
+      time: 4000,
+      isVisibility: false,
+    });
+  } finally {
+    submitButton.disabled = false;
   }
 }

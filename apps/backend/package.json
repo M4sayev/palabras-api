@@ -7,7 +7,7 @@
   "type": "commonjs",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js",
+    "dev": "nodemon app.js",
     "test": "npm test",
     "db:seed": "node db/seed.js",
     "db:migrate": "db-migrate up",
@@ -31,7 +31,8 @@
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1",
     "winston": "^3.19.0",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "@my-app/validation": "*"
   },
   "devDependencies": {
     "db-migrate": "^0.11.14",

@@ -4,7 +4,7 @@ async function invalidateWordCache(affectedCategory = "*") {
   let cursor = 0;
   do {
     const reply = await redisClient.scan(cursor, {
-      MATCH: "category:${affectedCategory}",
+      MATCH: `category:${affectedCategory}`,
       COUNT: 100,
     });
     cursor = reply.cursor;

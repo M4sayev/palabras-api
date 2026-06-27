@@ -1,159 +1,117 @@
-# Turborepo starter
+# palabras-api
 
-This Turborepo starter is maintained by the Turborepo core team.
+A small full-stack app for learning Spanish vocabulary, built primarily as a backend learning project. The focus is on the Node.js API — auth, database access, caching, validation — with a minimal vanilla JS frontend on top.
 
-## Using this example
+This is a work in progress. The plan is to keep expanding it (reverse proxy, more infra) as I learn more.
 
-Run the following command:
+## Stack
 
-```sh
-npx create-turbo@latest
+- **Monorepo:** Turborepo
+- **Frontend:** Vite + vanilla JS, plain HTML/CSS (no framework)
+- **Backend:** Node.js + Express
+- **Database:** PostgreSQL
+- **Cache:** Redis
+- **Validation:** Zod, shared between frontend and backend via an internal package
+- **Local services:** run through WSL (Postgres, Redis)
+- **API docs:** Swagger / OpenAPI (swagger-jsdoc + swagger-ui-express)
+
+## Repo structure
+
+```
+apps/
+  backend/
+    config/         # swagger, redis, logger, mailer setup
+    controllers/     # request handlers
+    db/              # db connection pool
+    errors/          # error helpers (e.g. not found)
+    logs/            # winston log output
+    middleware/       # auth, validation, async wrapper, error handler
+    migrations/       # db migrations
+    repositories/     # data access layer (queries live here)
+    routes/          # express routers + swagger annotations
+    templates/        # static email templates (password reset)
+    utils/           # misc helpers (cache invalidation, etc.)
+  frontend/
+    src/
+      auth/
+        scripts/      # login, register, forgot/reset password logic
+        utils/        # form validation helpers
+      account/
+        scripts/      # account menu (logout, delete account)
+    *.html             # pages, outside src/
+packages/
+  shared-validation/   # Zod schemas shared across apps
 ```
 
-## What's inside?
+## Features
 
-This Turborepo includes the following packages/apps:
+### Auth
 
-### Apps and Packages
+- Register / login with bcrypt password hashing
+- JWT access tokens (short-lived) + refresh tokens (rotated, stored in Postgres, sent as an HTTP-only cookie)
+- Refresh endpoint to silently renew access tokens
+- Logout (revokes the refresh token)
+- Delete account (revokes all refresh tokens for the user, deletes the user row)
+- Forgot / reset password flow with a hashed, time-limited token, emailed via a fake SMTP service (Ethereal) for local testing
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+### Dictionary
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+- Words belong to a category and have a definition + example sentence
+- CRUD on words, with category and free-text search filtering
+- Bulk delete by ID list
+- List categories (used to populate filters and the add/edit form)
 
-### Utilities
+### Cross-cutting
 
-This Turborepo has some additional tools already setup for you:
+- Centralized error handling middleware, with validation errors surfaced separately from generic errors
+- Request logging with Morgan piped into Winston
+- Redis caching on word list queries, keyed by category + search, invalidated on writes
+- Validation schemas defined once in `shared-validation` and reused on both frontend (live field-level feedback) and backend (request body parsing)
+- Swagger docs available once the server is running
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+## Running locally
 
-### Build
+Services (Postgres, Redis) are expected to be running, typically via WSL.
 
-To build all apps and packages, run the following command:
+```bash
+# install (installs in all apps and packages)
+npm install
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo build
-npm dlx turbo build
-npm exec turbo build
-```
-
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-npm exec turbo build --filter=docs
-npm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
+# run everything (frontend + backend) via Turborepo
 npx turbo dev
-npm exec turbo dev
-npm exec turbo dev
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+Environment variables expected by the backend (`.env`):
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
+```
+PORT=5000
+JWT_SECRET=
+JWT_REFRESH_SECRET=
+JWT_EXPIRES_IN=15m
+NODE_ENV=development
+EMAIL_USER=
+EMAIL_PASS=
 ```
 
-Without global `turbo`:
+Database connection and Redis connection settings are read from wherever `db/connect.js` and `config/redis.js` expect them — check those files for the exact variable names.
 
-```sh
-npx turbo dev --filter=web
-npm exec turbo dev --filter=web
-npm exec turbo dev --filter=web
+## API docs
+
+Once the backend is running, Swagger UI is available at:
+
+```
+http://localhost:3000/api-docs
 ```
 
-### Remote Caching
+(Adjust the port if you've changed it.)
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+## TODO
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+- No automated tests yet.
+- No rate limiting on auth endpoints.
+- Reverse proxy, containerization, and CI are not set up yet — planned next.
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+## Notes
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-npm exec turbo login
-npm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-npm exec turbo link
-npm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+- Email sending is wired through Ethereal (a fake SMTP catcher) for local development — no real emails are sent.
+- The frontend is intentionally minimal: no framework, no bundler magic beyond Vite's defaults, so the backend stays the focus.

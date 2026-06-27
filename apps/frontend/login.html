@@ -11,8 +11,6 @@
       <h1>Welcome back</h1>
 
       <form id="loginForm" class="auth-form" method="POST" novalidate>
-        <p class="auth-form__error" id="formError" role="alert"></p>
-
         <div class="field">
           <label for="email">Email</label>
           <input
@@ -21,7 +19,9 @@
             id="email"
             autocomplete="email"
             required
+            aria-invalid="false"
           />
+          <p class="auth-form__error--field" id="emailError" role="alert"></p>
         </div>
 
         <div class="field">
@@ -35,9 +35,16 @@
             id="password"
             autocomplete="current-password"
             required
+            aria-invalid="false"
           />
+          <p
+            class="auth-form__error--field"
+            id="passwordError"
+            role="alert"
+          ></p>
         </div>
 
+        <p class="auth-form__error" id="genericError" role="alert"></p>
         <button type="submit" class="std-btn">Log in</button>
 
         <p class="auth-switch">

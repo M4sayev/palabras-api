@@ -578,6 +578,9 @@ h1 {
   font-size: var(--text-sm);
 }
 
+.auth-form input[aria-invalid="true"] {
+  border-color: var(--clr-danger);
+}
 .auth-form__error {
   background-color: var(--clr-danger);
   color: var(--clr-sec);
@@ -587,6 +590,18 @@ h1 {
   font-family: var(--text-body);
   font-size: var(--text-sm);
   display: none;
+}
+.auth-form__error--field {
+  background-color: transparent;
+  color: var(--clr-danger);
+  border-radius: var(--radius-sm);
+
+  font-family: var(--text-body);
+  font-size: var(--text-sm);
+  visibility: hidden;
+  margin-bottom: 8px;
+  margin-top: -2px;
+  height: 0;
 }
 
 .auth-form__error[data-visible="true"] {

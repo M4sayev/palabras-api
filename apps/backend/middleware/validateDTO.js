@@ -1,41 +1,42 @@
-const {
-  createWordSchema,
-  updateWordSchema,
-  bulkDeleteSchema,
-  registerSchema,
-  loginSchema,
-  forgotPasswordSchema,
-  resetPasswordSchema,
-} = require("../validation/schemas");
+const handleValidation = (schemaName) => async (req, res, next) => {
+  try {
+    const schemas = await import("@my-app/validation");
+    const schema = schemas[schemaName];
 
-const handleValidation = (schema) => (req, res, next) => {
-  const result = schema.safeParse(req.body);
+    if (!schema) {
+      return next(new Error(`Validation schema '${schemaName}' not found.`));
+    }
 
-  if (!result.success) {
-    const validationErrors = {};
+    const result = schema.safeParse(req.body);
 
-    result.error.issues.forEach((issue) => {
-      const fieldName = issue.path.join(".");
-      validationErrors[fieldName] = issue.message;
-    });
+    if (!result.success) {
+      const validationErrors = {};
 
-    const err = new Error("Validation Failed");
-    err.statusCode = 400;
+      result.error.issues.forEach((issue) => {
+        const fieldName = issue.path.join(".");
+        validationErrors[fieldName] = issue.message;
+      });
 
-    err.validationErrors = validationErrors;
-    return next(err);
+      const err = new Error("Validation Failed");
+      err.statusCode = 400;
+
+      err.validationErrors = validationErrors;
+      return next(err);
+    }
+
+    req.body = result.data;
+    next();
+  } catch (error) {
+    next(error);
   }
-
-  req.body = result.data;
-  next();
 };
 
 module.exports = {
-  create: handleValidation(createWordSchema),
-  update: handleValidation(updateWordSchema),
-  bulkDelete: handleValidation(bulkDeleteSchema),
-  registerUser: handleValidation(registerSchema),
-  loginUser: handleValidation(loginSchema),
-  forgotPassword: handleValidation(forgotPasswordSchema),
-  resetPassword: handleValidation(resetPasswordSchema),
+  create: handleValidation("createWordSchema"),
+  update: handleValidation("updateWordSchema"),
+  bulkDelete: handleValidation("bulkDeleteSchema"),
+  registerUser: handleValidation("registerSchema"),
+  loginUser: handleValidation("loginSchema"),
+  forgotPassword: handleValidation("forgotPasswordSchema"),
+  resetPassword: handleValidation("resetPasswordSchema"),
 };

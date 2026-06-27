@@ -18,7 +18,7 @@ const app = express();
 setupSwagger(app);
 
 const corsOptions = {
-  origin: "http://localhost:5174",
+  origin: "http://localhost:5173",
   credentials: true,
 };
 
