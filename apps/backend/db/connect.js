@@ -9,4 +9,14 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
 });
 
-module.exports = pool;
+async function testDBConnection() {
+  try {
+    await pool.query("SELECT 1");
+    console.log("Database connected");
+  } catch (err) {
+    console.error("Database connection failed:", err.message);
+    process.exit(1);
+  }
+}
+
+module.exports = { pool, testDBConnection };

@@ -11,6 +11,7 @@ const requireAuth = require("./middleware/requireAuth.js");
 const morgan = require("morgan");
 const logger = require("./config/logger.js");
 const { stripAnsi } = require("./utils/utils.js");
+const { testDBConnection } = require("./db/connect.js");
 require("dotenv").config();
 
 const app = express();
@@ -43,6 +44,8 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT ?? 5000;
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server is listening on port on http://localhost:${PORT}`);
+
+  testDBConnection();
 });

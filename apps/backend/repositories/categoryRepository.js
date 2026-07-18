@@ -1,4 +1,4 @@
-const pool = require("../db/connect");
+const { pool } = require("../db/connect");
 
 class CategoryRepository {
   async findAll() {

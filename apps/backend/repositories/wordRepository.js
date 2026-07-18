@@ -1,4 +1,4 @@
-const pool = require("../db/connect.js");
+const { pool } = require("../db/connect.js");
 const redisClient = require("../config/redis.js");
 const { invalidateWordCache } = require("../utils/redis.js");
 const logger = require("../config/logger.js");
