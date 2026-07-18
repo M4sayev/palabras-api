@@ -28,6 +28,11 @@ const exampleInput = document.getElementById("exampleInput");
 const wordFormSubmitBtn = document.getElementById("wordFormSubmitBtn");
 const wordFormCancelBtn = document.getElementById("wordFormCancelBtn");
 
+const wotdWord = document.getElementById("wotdWord");
+const wotdCategory = document.getElementById("wotdCategory");
+const wotdDefinition = document.getElementById("wotdDefinition");
+const wotdExample = document.getElementById("wotdExample");
+
 const palette = [
   { bg: "var(--clr-blue-soft)", border: "var(--clr-blue-dark)", text: "white" },
   { bg: "var(--clr-red-dark)", border: "var(--clr-red-dark)", text: "white" },
@@ -373,6 +378,25 @@ confirmBulkDeleteBtn.addEventListener("click", async () => {
   } else {
     console.log("Bulk delete failed");
   }
+});
+
+const ws = new WebSocket(`ws://${window.location.host}/ws`);
+
+ws.addEventListener("message", (event) => {
+  const { type, payload } = JSON.parse(event.data);
+
+  console.log(event.data);
+
+  if (type === "word_of_the_day") {
+    wotdWord.textContent = payload.word;
+    wotdCategory.textContent = payload.category_name;
+    wotdDefinition.textContent = payload.definition;
+    wotdExample.textContent = payload.example_sentence;
+  }
+});
+
+ws.addEventListener("close", () => {
+  console.log("WebSocket disconnected");
 });
 
 window.addEventListener("DOMContentLoaded", async () => {

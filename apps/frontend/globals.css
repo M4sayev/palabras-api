@@ -216,6 +216,98 @@ h1 {
 }
 
 /* ---------------------------------------------------------------- */
+/* Word of the hour                                                  */
+/* ---------------------------------------------------------------- */
+
+.wotd-card {
+  background-color: var(--clr-card);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 27px,
+    var(--clr-card-line) 28px
+  );
+
+  border: 3px solid var(--clr-dark);
+  border-radius: var(--radius-md);
+  box-shadow: 5px 5px 0 var(--clr-primary);
+
+  padding: calc(1.5 * var(--size-xl));
+  margin-bottom: calc(2 * var(--size-xl));
+  position: relative;
+}
+
+.wotd-card::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--clr-red-soft);
+  border: 2px solid var(--clr-dark);
+}
+
+.wotd-card__label {
+  text-transform: uppercase;
+  font-size: var(--text-sm);
+  letter-spacing: 0.08rem;
+  color: var(--clr-primary);
+  opacity: 0.6;
+  margin-left: calc(2 * var(--size-xl));
+  margin-bottom: var(--size-md);
+}
+
+.wotd-card__word {
+  font-size: var(--text-xl);
+  color: var(--clr-primary);
+  text-transform: uppercase;
+  margin-left: calc(2 * var(--size-xl));
+  margin-bottom: var(--size-sm);
+}
+
+.wotd-card__category {
+  display: inline-block;
+  margin-left: calc(2 * var(--size-xl));
+  margin-bottom: var(--size-md);
+
+  text-transform: uppercase;
+  font-size: var(--text-sm);
+  letter-spacing: 0.04rem;
+
+  border: 2px solid white;
+  border-radius: var(--radius-sm);
+  background-color: var(--clr-accent);
+  color: white;
+
+  padding: var(--size-xs) var(--size-sm);
+}
+
+.wotd-card__definition {
+  font-family: var(--text-body);
+  color: var(--clr-dark);
+  opacity: 0.7;
+  margin-left: calc(2 * var(--size-xl));
+  margin-bottom: var(--size-md);
+}
+
+.wotd-card__example {
+  font-family: var(--text-mono);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+
+  padding: var(--size-md) var(--size-lg);
+
+  border-left: 3px solid var(--clr-accent);
+
+  background-color: rgba(0, 163, 133, 0.06);
+  color: var(--clr-primary);
+
+  margin-top: var(--size-lg);
+}
+
+/* ---------------------------------------------------------------- */
 /* Word form (add / edit)                                            */
 /* ---------------------------------------------------------------- */
 

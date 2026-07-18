@@ -13,8 +13,13 @@ const logger = require("./config/logger.js");
 const { stripAnsi } = require("./utils/utils.js");
 const { testDBConnection } = require("./db/connect.js");
 require("dotenv").config();
+const http = require("http");
+const { initCron } = require("./config/cron.js");
+const { initWebSocket } = require("./config/websocket.js");
 
 const app = express();
+
+const server = http.createServer(app);
 
 setupSwagger(app);
 
@@ -42,10 +47,13 @@ app.use("/api/v1/auth", authenticationRouter);
 
 app.use(errorHandler);
 
-const PORT = process.env.PORT ?? 5000;
+const PORT = process.env.PORT ?? 3000;
 
-app.listen(PORT, async () => {
+initWebSocket(server);
+
+server.listen(PORT, async () => {
   console.log(`Server is listening on port on http://localhost:${PORT}`);
 
   testDBConnection();
+  initCron();
 });
