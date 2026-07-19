@@ -13,7 +13,8 @@
     "db:migrate": "db-migrate up",
     "db:rollback": "db-migrate down",
     "db:setup-dev": "npm run db:migrate && npm run db:seed",
-    "db:reset-dev": "db-migrate reset && npm run db:setup-dev"
+    "db:reset-dev": "db-migrate reset && npm run db:setup-dev",
+    "logs:clear": "for f in logs/*.log; do > \"$f\"; done"
   },
   "dependencies": {
     "@my-app/validation": "*",

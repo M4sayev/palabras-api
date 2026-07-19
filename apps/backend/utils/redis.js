@@ -1,10 +1,10 @@
 const redisClient = require("../config/redis.js");
 
 async function invalidateWordCache(affectedCategory = "*") {
-  let cursor = 0;
+  let cursor = "0";
   do {
     const reply = await redisClient.scan(cursor, {
-      MATCH: `category:${affectedCategory}`,
+      MATCH: `category:${affectedCategory}*`,
       COUNT: 100,
     });
     cursor = reply.cursor;
@@ -13,7 +13,7 @@ async function invalidateWordCache(affectedCategory = "*") {
     if (keys.length > 0) {
       await redisClient.del(keys);
     }
-  } while (cursor !== 0);
+  } while (cursor !== "0");
 }
 
 module.exports = { invalidateWordCache };

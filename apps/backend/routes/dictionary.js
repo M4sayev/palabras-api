@@ -23,8 +23,8 @@ const router = express.Router();
  *       - in: query
  *         name: category
  *         schema:
- *           type: string
- *         description: Filter words by exact category name (e.g., Nouns)
+ *           type: integer
+ *         description: Filter words by category_id
  *       - in: query
  *         name: search
  *         schema:

@@ -34,7 +34,7 @@ class WordRepository {
 
     if (category) {
       queryParams.push(category);
-      whereClauses.push(`c.name = $${queryParams.length}`);
+      whereClauses.push(`c.category_id = $${queryParams.length}`);
     }
 
     if (search) {
@@ -126,9 +126,9 @@ class WordRepository {
     if (result.rowCount > 0) {
       const affectedCategories = [
         ...new Set(
-          result.rows.map(
-            ((row) => row.category_name?.trim().toLowerCase()).filter(Boolean),
-          ),
+          result.rows
+            .map((row) => row.category_name?.trim().toLowerCase())
+            .filter(Boolean),
         ),
       ];
 
