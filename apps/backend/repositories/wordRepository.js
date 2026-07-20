@@ -4,11 +4,11 @@ const { invalidateWordCache } = require("../utils/redis.js");
 const logger = require("../config/logger.js");
 
 class WordRepository {
-  async findFilteredWords({ category, search }) {
+  async findFilteredWords({ category, search, limit, offset }) {
     const cleanCategory = category?.trim().toLowerCase() || "all";
     const cleanSearch = search?.trim().toLowerCase() || "none";
 
-    const cachedKey = `category:${cleanCategory}:search:${cleanSearch}`;
+    const cachedKey = `category:${cleanCategory}:search:${cleanSearch}:page:${Math.ceil(offset / limit) + 1}:limit:${limit}`;
 
     try {
       const cachedData = await redisClient.get(cachedKey);
@@ -29,6 +29,13 @@ class WordRepository {
         INNER JOIN categories c ON c.category_id = m.category_id  
     `;
 
+    let countText = `
+        SELECT COUNT(*) 
+        FROM words w 
+        INNER JOIN meanings m ON w.word_id = m.word_id
+        INNER JOIN categories c ON c.category_id = m.category_id
+    `;
+
     const queryParams = [];
     const whereClauses = [];
 
@@ -44,19 +51,29 @@ class WordRepository {
 
     if (whereClauses.length > 0) {
       queryText += " WHERE " + whereClauses.join(" AND ");
+      countText += " WHERE " + whereClauses.join(" AND ");
     }
 
-    queryText += ` ORDER BY w.word ASC;`;
+    queryText += ` ORDER BY w.word ASC LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`;
 
-    const result = await pool.query(queryText, queryParams);
+    const [result, countResult] = await Promise.all([
+      pool.query(queryText, [...queryParams, limit, offset]),
+      pool.query(countText, queryParams),
+    ]);
+
+    const total = parseInt(countResult.rows[0].count);
 
     try {
-      await redisClient.setEx(cachedKey, 3600, JSON.stringify(result.rows));
+      await redisClient.setEx(
+        cachedKey,
+        3600,
+        JSON.stringify({ words: result.rows, total }),
+      );
     } catch (error) {
       logger.error("Redis write error ", error.message);
     }
 
-    return result.rows;
+    return { words: result.rows, total };
   }
 
   async deleteById(id) {

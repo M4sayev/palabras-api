@@ -592,6 +592,30 @@ h1 {
   grid-column: 1 / -1;
 }
 
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--size-sm);
+  margin-top: var(--size-xl);
+}
+
+.pagination__btn {
+  padding: var(--size-xs) var(--size-sm);
+  min-width: 2.5rem;
+}
+
+.pagination__btn.is-current {
+  background-color: var(--clr-accent);
+  cursor: default;
+}
+
+.pagination__ellipsis {
+  color: var(--clr-sec);
+  padding: 0 var(--size-xs);
+}
+
 /* ---------------------------------------------------------------- */
 /* Auth forms (register / login)                                    */
 /* ---------------------------------------------------------------- */

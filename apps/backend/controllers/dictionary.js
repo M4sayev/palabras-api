@@ -5,13 +5,24 @@ const createNotFoundHandler = require("../errors/notFoundError.js");
 const getWords = async (req, res) => {
   const category = req.query.category;
   const search = req.query.search;
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = Math.min(50, parseInt(req.query.limit) || 20);
+  const offset = (page - 1) * limit;
 
-  const words = await wordRepository.findFilteredWords({ category, search });
+  const { words, total } = await wordRepository.findFilteredWords({
+    category,
+    search,
+    limit,
+    offset,
+  });
 
   return res.status(200).json({
     success: true,
     count: words.length,
     data: words,
+    total,
+    page,
+    totalPages: Math.ceil(total / limit),
   });
 };
 

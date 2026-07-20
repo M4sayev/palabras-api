@@ -1,6 +1,8 @@
 import { apiFetch } from "@/auth/scripts/auth.js";
+import { renderPagination } from "./pagination.js";
 
 const BASE_URL = "/api/v1/dictionary";
+const LIMIT = 20;
 
 const wordList = document.getElementById("wordList");
 
@@ -161,10 +163,13 @@ async function deleteWordsBulk(ids) {
   }
 }
 
-async function fetchAllWords({ category = "", search = "" }) {
+let currentPage = 1;
+let totalPages = 1;
+
+async function fetchAllWords({ category = "", search = "", page = 1 }) {
   try {
     const response = await apiFetch(
-      `${BASE_URL}/words?category=${encodeURIComponent(category)}&search=${encodeURIComponent(search)}`,
+      `${BASE_URL}/words?category=${encodeURIComponent(category)}&search=${encodeURIComponent(search)}&page=${page}&limit=${LIMIT}`,
     );
 
     if (!response.ok) {
@@ -179,6 +184,11 @@ async function fetchAllWords({ category = "", search = "" }) {
       return;
     }
 
+    totalPages = data.totalPages;
+    currentPage = page;
+
+    history.pushState({ page }, "", `?page=${page}`);
+
     wordList.innerHTML = "";
     selectedIds.clear();
     updateSelectionUI();
@@ -188,6 +198,9 @@ async function fetchAllWords({ category = "", search = "" }) {
       empty.className = "dictionary__empty";
       empty.textContent = "No words found.";
       wordList.appendChild(empty);
+      renderPagination(currentPage, totalPages, (nextPage) =>
+        fetchAllWords({ category, search, page: nextPage }),
+      );
       return;
     }
 
@@ -195,6 +208,10 @@ async function fetchAllWords({ category = "", search = "" }) {
       const wordHTML = await generateWord(word);
       wordList.appendChild(wordHTML);
     }
+
+    renderPagination(currentPage, totalPages, (nextPage) =>
+      fetchAllWords({ category, search, page: nextPage }),
+    );
   } catch (error) {
     console.error(`Error occurred: ${error}`);
   }
@@ -299,7 +316,10 @@ function initWords() {
 
   searchForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    await fetchAllWords({ category: catInput.value, search: searchInput.value });
+    await fetchAllWords({
+      category: catInput.value,
+      search: searchInput.value,
+    });
   });
 
   deleteSelectedBtn.addEventListener("click", () => {

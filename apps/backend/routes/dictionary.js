@@ -17,8 +17,8 @@ const router = express.Router();
  * @openapi
  * /dictionary/words:
  *   get:
- *     summary: Retrieve words with dynamic filtering
- *     description: Fetches words, meanings, and categories. Supports search strings and category filtering.
+ *     summary: Retrieve words with dynamic filtering and pagination
+ *     description: Fetches words, meanings, and categories. Supports search strings, category filtering, and pagination.
  *     parameters:
  *       - in: query
  *         name: category
@@ -30,9 +30,46 @@ const router = express.Router();
  *         schema:
  *           type: string
  *         description: Case-insensitive search on the word field
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *           maximum: 50
+ *         description: Number of words per page
  *     responses:
  *       200:
- *         description: A successful array of filtered words.
+ *         description: A successful paginated array of words.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 count:
+ *                   type: integer
+ *                   example: 20
+ *                 total:
+ *                   type: integer
+ *                   example: 80
+ *                 page:
+ *                   type: integer
+ *                   example: 1
+ *                 totalPages:
+ *                   type: integer
+ *                   example: 4
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
  *       500:
  *         description: Internal Server Error.
  *
