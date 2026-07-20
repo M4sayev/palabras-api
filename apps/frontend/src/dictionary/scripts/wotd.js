@@ -1,4 +1,5 @@
 function initWordOfTheDay() {
+  const wotdCard = document.getElementById("wotdCard");
   const wotdWord = document.getElementById("wotdWord");
   const wotdCategory = document.getElementById("wotdCategory");
   const wotdDefinition = document.getElementById("wotdDefinition");
@@ -12,6 +13,7 @@ function initWordOfTheDay() {
     console.log(event.data);
 
     if (type === "word_of_the_day") {
+      wotdCard.classList.remove("is-loading");
       wotdWord.textContent = payload.word;
       wotdCategory.textContent = payload.category_name;
       wotdDefinition.textContent = payload.definition;

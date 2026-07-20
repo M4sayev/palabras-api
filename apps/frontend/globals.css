@@ -583,6 +583,100 @@ h1 {
   padding: var(--size-sm);
 }
 
+/* ---------------------------------------------------------------- */
+/* Skeleton loading placeholders                                     */
+/* ---------------------------------------------------------------- */
+
+@keyframes skeleton-pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+.skeleton-line {
+  display: block;
+  border-radius: var(--radius-sm);
+  background-color: var(--clr-card-line);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.dictionary__word--skeleton {
+  cursor: default;
+  pointer-events: none;
+}
+
+.dictionary__word--skeleton:hover {
+  transform: none;
+}
+
+.dictionary__word--skeleton .skeleton-line--category {
+  width: 90px;
+  height: 22px;
+  margin-left: calc(2 * var(--size-xl));
+  margin-bottom: var(--size-md);
+}
+
+.dictionary__word--skeleton .skeleton-line--title {
+  width: 55%;
+  height: 24px;
+  margin: 0 0 var(--size-sm) calc(2 * var(--size-xl));
+}
+
+.dictionary__word--skeleton .skeleton-line--text {
+  width: 85%;
+  height: 14px;
+  margin-left: calc(2 * var(--size-xl));
+  margin-bottom: var(--size-sm);
+}
+
+.dictionary__word--skeleton .skeleton-line--example {
+  height: 48px;
+  margin-top: var(--size-lg);
+}
+
+.dictionary__word--skeleton .skeleton-line--actions {
+  height: 36px;
+  margin-top: var(--size-lg);
+}
+
+.wotd-card.is-loading #wotdWord,
+.wotd-card.is-loading #wotdCategory,
+.wotd-card.is-loading #wotdDefinition,
+.wotd-card.is-loading #wotdExample {
+  display: block;
+  color: transparent;
+  background-color: var(--clr-card-line);
+  border-radius: var(--radius-sm);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.wotd-card.is-loading #wotdWord {
+  width: 40%;
+  height: var(--text-xl);
+}
+
+.wotd-card.is-loading #wotdCategory {
+  width: 90px;
+  height: 22px;
+  border: none;
+}
+
+.wotd-card.is-loading #wotdDefinition {
+  width: 80%;
+  height: 16px;
+}
+
+.wotd-card.is-loading #wotdExample {
+  height: 40px;
+  width: 100%;
+}
+
 .dictionary__empty {
   font-family: var(--text-body);
   text-align: center;

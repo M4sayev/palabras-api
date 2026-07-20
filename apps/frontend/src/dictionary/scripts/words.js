@@ -163,10 +163,43 @@ async function deleteWordsBulk(ids) {
   }
 }
 
+const SKELETON_COUNT = 8;
+
+function generateWordSkeleton() {
+  const li = document.createElement("li");
+  li.className = "dictionary__word dictionary__word--skeleton";
+
+  const category = document.createElement("span");
+  category.className = "skeleton-line skeleton-line--category";
+
+  const title = document.createElement("h2");
+  title.className = "skeleton-line skeleton-line--title";
+
+  const text = document.createElement("p");
+  text.className = "skeleton-line skeleton-line--text";
+
+  const example = document.createElement("div");
+  example.className = "skeleton-line skeleton-line--example";
+
+  const actions = document.createElement("div");
+  actions.className = "skeleton-line skeleton-line--actions";
+
+  li.append(category, title, text, example, actions);
+  return li;
+}
+
+function renderWordSkeletons() {
+  wordList.innerHTML = "";
+  for (let i = 0; i < SKELETON_COUNT; i++) {
+    wordList.appendChild(generateWordSkeleton());
+  }
+}
+
 let currentPage = 1;
 let totalPages = 1;
 
 async function fetchAllWords({ category = "", search = "", page = 1 }) {
+  renderWordSkeletons();
   try {
     const response = await apiFetch(
       `${BASE_URL}/words?category=${encodeURIComponent(category)}&search=${encodeURIComponent(search)}&page=${page}&limit=${LIMIT}`,
